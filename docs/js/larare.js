@@ -1,16 +1,22 @@
 // Lärarens sida: rita banor, starta omgångar och följa klassen live.
 
 import { banlangd, formateraTid, formateraAvstand, punktNamn, strackor } from './geo.js';
-import { $, api as grundApi, esc, visaVy, visaFel, tidSedan, klockslag } from './hjalp.js';
+import { $, esc, visaVy, visaFel, tidSedan, klockslag } from './hjalp.js';
+import {
+  EJ_KONFIGURERAD_TEXT,
+  arInloggad,
+  hamtaInloggningFranAdress,
+  inloggadEpost,
+  konfigurerad,
+  loggaIn,
+  loggaUt,
+  rpc,
+  skapaKonto,
+} from './backend.js';
 import { BanLager, MinPosition, skapaKarta, satKarttyp, MIN_BLA } from './kartlager.js';
 
-const LOSEN_NYCKEL = 'stampla-lararlosen';
 const KARTVY_NYCKEL = 'stampla-kartvy';
 const UPPDATERA_MS = 2000;
-
-// ---------------------------------------------------------------------------
-// API med lärarlösenord (används bara om servern startats med LARARLOSEN)
-// ---------------------------------------------------------------------------
 
 function lasLokalt(nyckel) {
   try {
@@ -28,35 +34,87 @@ function sparaLokalt(nyckel, varde) {
   }
 }
 
-let losenFraga = null;
+// ---------------------------------------------------------------------------
+// Inloggning
+// ---------------------------------------------------------------------------
 
-function fragaLosen(felText) {
-  losenFraga ??= new Promise((resolve) => {
-    const dialog = $('#losen-dialog');
-    visaFel($('#losen-fel'), felText);
-    $('#losen').value = '';
-    dialog.oncancel = (e) => e.preventDefault();
-    $('#losen-form').onsubmit = (e) => {
+let inloggningsFraga = null;
+
+/** Visar inloggningsrutan och väntar tills läraren har loggat in eller skapat ett konto. */
+function fragaInloggning(meddelande = '') {
+  inloggningsFraga ??= new Promise((resolve) => {
+    const dialog = $('#inlogg-dialog');
+    const info = $('#inlogg-info');
+    visaFel($('#inlogg-fel'), '');
+    info.textContent = meddelande;
+    info.hidden = !meddelande;
+    $('#inlogg-losen').value = '';
+    if (!$('#inlogg-epost').value) $('#inlogg-epost').value = lasLokalt('stampla-senaste-epost') || '';
+    dialog.oncancel = (e) => e.preventDefault(); // går inte att stänga utan att logga in
+
+    $('#inlogg-form').onsubmit = async (e) => {
       e.preventDefault();
-      sparaLokalt(LOSEN_NYCKEL, $('#losen').value);
-      dialog.close();
-      resolve();
+      const skapa = e.submitter?.value === 'skapa';
+      const epost = $('#inlogg-epost').value.trim();
+      const losen = $('#inlogg-losen').value;
+      if (!epost || !losen) return visaFel($('#inlogg-fel'), 'Fyll i både e-post och lösenord.');
+      if (skapa && losen.length < 8) return visaFel($('#inlogg-fel'), 'Välj ett lösenord med minst 8 tecken.');
+      const knappar = [...dialog.querySelectorAll('button')];
+      knappar.forEach((k) => (k.disabled = true));
+      visaFel($('#inlogg-fel'), '');
+      try {
+        if (skapa) {
+          const svar = await skapaKonto(epost, losen);
+          if (svar.maste_bekrafta) {
+            info.textContent = `Kontot är skapat. Vi har skickat ett mejl till ${epost}. Klicka på länken i det, så kommer du tillbaka hit inloggad.`;
+            info.hidden = false;
+            return;
+          }
+        } else {
+          await loggaIn(epost, losen);
+        }
+        dialog.close();
+        visaInloggad();
+        resolve();
+      } catch (fel) {
+        visaFel($('#inlogg-fel'), fel.message);
+      } finally {
+        knappar.forEach((k) => (k.disabled = false));
+      }
     };
     dialog.showModal();
+    $(lasLokalt('stampla-senaste-epost') ? '#inlogg-losen' : '#inlogg-epost').focus();
   }).finally(() => {
-    losenFraga = null;
+    inloggningsFraga = null;
   });
-  return losenFraga;
+  return inloggningsFraga;
 }
 
-async function api(metod, url, body) {
+function visaInloggad() {
+  const epost = inloggadEpost();
+  $('#topp-konto').hidden = !arInloggad();
+  $('#topp-epost').textContent = epost || 'Inloggad';
+  if (epost) {
+    sparaLokalt('stampla-senaste-epost', epost);
+    $('#inlogg-epost').value = epost;
+  }
+}
+
+$('#logga-ut').addEventListener('click', async () => {
+  await loggaUt();
+  visaInloggad();
+  location.hash = '#/';
+  navigera();
+});
+
+/** Anropar en lärarfunktion i databasen. Ber läraren logga in först om det behövs. */
+async function api(funktion, argument = {}) {
   for (;;) {
-    const losen = lasLokalt(LOSEN_NYCKEL) || '';
     try {
-      return await grundApi(metod, url, body, losen ? { 'x-lararlosen': losen } : {});
+      return await rpc(funktion, argument);
     } catch (fel) {
       if (fel.status !== 401) throw fel;
-      await fragaLosen(losen ? 'Fel lösenord. Försök igen.' : '');
+      await fragaInloggning();
     }
   }
 }
@@ -111,7 +169,7 @@ async function visaHem() {
   visaVy('vy-hem');
   document.title = 'Stämpla – lärare';
   try {
-    const [{ banor }, { omgangar }] = await Promise.all([api('GET', '/api/larare/banor'), api('GET', '/api/larare/omgangar')]);
+    const [{ banor }, { omgangar }] = await Promise.all([api('larare_banor'), api('larare_omgangar')]);
     hemBanor = banor;
     ritaHem(banor, omgangar);
   } catch (fel) {
@@ -173,11 +231,11 @@ $('#vy-hem').addEventListener('click', async (e) => {
     } else if (taBortBana) {
       const bana = hemBanor.find((b) => b.id === taBortBana.dataset.taBortBana);
       if (!confirm(`Ta bort banan "${bana.namn}"? Det går inte att ångra. Avslutade omgångar och deras resultat finns kvar.`)) return;
-      await api('DELETE', `/api/larare/banor/${bana.id}`);
+      await api('larare_ta_bort_bana', { p_id: bana.id });
       visaHem();
     } else if (taBortOmgang) {
       if (!confirm('Ta bort omgången och alla elevers resultat och rutter? Det går inte att ångra.')) return;
-      await api('DELETE', `/api/larare/omgangar/${taBortOmgang.dataset.taBortOmgang}`);
+      await api('larare_ta_bort_omgang', { p_id: taBortOmgang.dataset.taBortOmgang });
       visaHem();
     }
   } catch (fel) {
@@ -197,10 +255,10 @@ function oppnaStartDialog(bana) {
     const knapp = $('#start-ok');
     knapp.disabled = true;
     try {
-      const { omgang } = await api('POST', '/api/larare/omgangar', {
-        banaId: bana.id,
-        namn: $('#start-namn').value.trim() || bana.namn,
-        testlage: $('#start-test').checked,
+      const { omgang } = await api('larare_starta_omgang', {
+        p_bana_id: bana.id,
+        p_namn: $('#start-namn').value.trim() || bana.namn,
+        p_testlage: $('#start-test').checked,
       });
       dialog.close();
       location.hash = `#/omgang/${omgang.id}`;
@@ -223,7 +281,7 @@ async function visaRedigera(id, mitt) {
   let bana = { namn: '', karttyp: 'gata', radie: 10, start: null, kontroller: [], mal: null };
   if (id) {
     try {
-      bana = structuredClone((await api('GET', `/api/larare/banor/${id}`)).bana);
+      bana = structuredClone((await api('larare_bana', { p_id: id })).bana);
     } catch (fel) {
       alert(fel.message);
       location.hash = '#/';
@@ -440,8 +498,7 @@ async function visaRedigera(id, mitt) {
     }
     knapp.disabled = true;
     try {
-      if (id) await api('PUT', `/api/larare/banor/${id}`, bana);
-      else await api('POST', '/api/larare/banor', bana);
+      await api('larare_spara_bana', { p_id: id, p_bana: bana });
       location.hash = '#/';
     } catch (fel) {
       visaFel($('#red-fel'), fel.message);
@@ -492,7 +549,7 @@ async function visaOmgang(id, mitt) {
   visaVy('vy-omgang');
   let data;
   try {
-    data = await api('GET', `/api/larare/omgangar/${id}`);
+    data = await api('larare_omgang', { p_id: id });
   } catch (fel) {
     alert(fel.message);
     location.hash = '#/';
@@ -505,7 +562,9 @@ async function visaOmgang(id, mitt) {
   let vald = null;
   let ruttLinje = null;
   const antal = omgang.bana.kontroller.length;
-  const adress = `${location.origin}/?pin=${omgang.pin}`;
+  const elevsida = new URL('./', location.href);
+  const adress = `${elevsida.href}?pin=${omgang.pin}`;
+  const kortAdress = (elevsida.host + elevsida.pathname).replace(/\/$/, '');
 
   const karta = skapaKarta($('#omg-karta'), omgang.bana.karttyp);
   const banLager = new BanLager(karta);
@@ -518,12 +577,12 @@ async function visaOmgang(id, mitt) {
   $('#omg-pin').textContent = formateraPin(omgang.pin);
   $('#omg-qr').innerHTML = qrSvg(adress);
   $('#omg-lank').href = adress;
-  $('#omg-lank').textContent = location.host;
+  $('#omg-lank').textContent = kortAdress;
   $('#omg-localhost').hidden = !['localhost', '127.0.0.1', '[::1]'].includes(location.hostname);
   $('#omg-detalj').hidden = true;
 
   $('#omg-visa-stort').onclick = () => {
-    $('#stor-adress').textContent = location.host;
+    $('#stor-adress').textContent = kortAdress;
     $('#stor-pin').textContent = formateraPin(omgang.pin);
     $('#stor-qr').innerHTML = qrSvg(adress);
     $('#pin-dialog').showModal();
@@ -532,7 +591,7 @@ async function visaOmgang(id, mitt) {
   $('#omg-avsluta').onclick = async () => {
     if (!confirm('Avsluta omgången? Elever som springer får beskedet att den är slut, och PIN-koden slutar fungera.')) return;
     try {
-      await api('POST', `/api/larare/omgangar/${id}/avsluta`);
+      await api('larare_avsluta_omgang', { p_id: id });
       await uppdatera();
     } catch (fel) {
       alert(fel.message);
@@ -647,7 +706,7 @@ async function visaOmgang(id, mitt) {
     $('#omg-stang-detalj').onclick = () => valj(vald);
 
     try {
-      const { rutt } = await api('GET', `/api/larare/omgangar/${id}/rutt/${d.id}`);
+      const { rutt } = await api('larare_rutt', { p_id: id, p_did: d.id });
       if (vald !== d.id) return;
       const punkter = rutt.map(([lat, lng]) => [lat, lng]);
       if (ruttLinje) ruttLinje.setLatLngs(punkter);
@@ -667,7 +726,7 @@ async function visaOmgang(id, mitt) {
 
   async function uppdatera() {
     try {
-      const svar = await api('GET', `/api/larare/omgangar/${id}`);
+      const svar = await rpc('larare_omgang', { p_id: id }); // ingen inloggningsruta mitt i live-vyn
       klockskillnad = svar.nu - Date.now();
       omgang = svar.omgang;
       ritaHuvud();
@@ -727,5 +786,18 @@ function laddaNerCsv(omgang) {
   setTimeout(() => URL.revokeObjectURL(lank.href), 2000);
 }
 
-window.addEventListener('hashchange', navigera);
-navigera();
+async function starta() {
+  if (!konfigurerad) {
+    visaVy('vy-hem');
+    $('#vy-hem').innerHTML = `<div class="tomt"><p><strong>Nästan klart.</strong></p><p>${esc(EJ_KONFIGURERAD_TEXT)}</p></div>`;
+    return;
+  }
+  const franMejl = hamtaInloggningFranAdress();
+  visaInloggad();
+  if (franMejl?.fel) await fragaInloggning(franMejl.fel);
+  else if (!arInloggad()) await fragaInloggning();
+  window.addEventListener('hashchange', navigera);
+  navigera();
+}
+
+starta();

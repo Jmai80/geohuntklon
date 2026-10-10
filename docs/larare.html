@@ -15,6 +15,10 @@
       Stämpla
     </a>
     <span class="topp-roll">Lärare</span>
+    <span class="topp-konto" id="topp-konto" hidden>
+      <span class="topp-epost" id="topp-epost"></span>
+      <button class="knapp liten-knapp" id="logga-ut" type="button">Logga ut</button>
+    </span>
   </header>
 
   <main>
@@ -136,7 +140,7 @@
             <div class="qr" id="omg-qr"></div>
           </div>
           <p class="liten">Eleverna går till <a id="omg-lank" target="_blank" rel="noopener"></a> och skriver in PIN-koden, eller skannar QR-koden.</p>
-          <p class="varning" id="omg-localhost" hidden>QR-koden och länken pekar på den här datorn (localhost) och fungerar inte i mobiler. Öppna lärarsidan via din https-länk från tunneln, se README.md.</p>
+          <p class="varning" id="omg-localhost" hidden>QR-koden och länken pekar på den här datorn (localhost) och fungerar inte i mobiler. Öppna lärarsidan via adressen på GitHub Pages i stället.</p>
           <div class="knapprad">
             <button class="knapp liten-knapp" id="omg-visa-stort" type="button">Visa PIN stort för klassen</button>
           </div>
@@ -192,14 +196,25 @@
     <form method="dialog"><button class="knapp">Stäng</button></form>
   </dialog>
 
-  <!-- Lärarlösenord (bara om servern startats med LARARLOSEN) -->
-  <dialog id="losen-dialog">
-    <form id="losen-form">
-      <h2>Lärarlösenord</h2>
-      <p>Lärarsidan är skyddad. Skriv lösenordet som servern startades med.</p>
-      <input type="password" id="losen" autocomplete="current-password" aria-label="Lösenord">
-      <p class="felruta" id="losen-fel" hidden></p>
-      <div class="knapprad"><button class="knapp primar" type="submit">Logga in</button></div>
+  <!-- Inloggning -->
+  <dialog id="inlogg-dialog">
+    <form id="inlogg-form" novalidate>
+      <h2>Logga in som lärare</h2>
+      <p class="hjalptext">Dina banor och omgångar sparas på ditt konto. Eleverna behöver inget konto, bara PIN-koden.</p>
+      <p class="varning" id="inlogg-info" hidden></p>
+      <div class="falt">
+        <label for="inlogg-epost">E-post</label>
+        <input type="email" id="inlogg-epost" autocomplete="username" inputmode="email" autocapitalize="off">
+      </div>
+      <div class="falt">
+        <label for="inlogg-losen">Lösenord</label>
+        <input type="password" id="inlogg-losen" autocomplete="current-password">
+      </div>
+      <p class="felruta" id="inlogg-fel" hidden></p>
+      <div class="knapprad">
+        <button class="knapp primar" type="submit" value="logga-in">Logga in</button>
+        <button class="knapp" type="submit" value="skapa">Skapa konto</button>
+      </div>
     </form>
   </dialog>
 

@@ -2,7 +2,8 @@
 // Mobilen skickar sina positioner till servern, och servern avgör när en kontroll är tagen.
 
 import { avstand, banlangd, formateraTid, formateraAvstand, strackor } from './geo.js';
-import { $, api, esc, visaVy, visaFel } from './hjalp.js';
+import { $, esc, visaVy, visaFel } from './hjalp.js';
+import { rpc } from './backend.js';
 import { BanLager, MinPosition, skapaKarta } from './kartlager.js';
 
 const SESSION_NYCKEL = 'stampla-elev';
@@ -63,7 +64,8 @@ function rensaSession() {
   }
 }
 
-const deltagarUrl = () => `/api/elev/omgangar/${s.omgang.id}/deltagare/${s.deltagareId}`;
+// Det som identifierar eleven i varje anrop till databasen.
+const mig = () => ({ p_omgang_id: s.omgang.id, p_did: s.deltagareId, p_token: s.token });
 
 async function init() {
   kopplaHandelser();
@@ -74,10 +76,7 @@ async function init() {
   const sparad = lasSession();
   if (!sparad?.omgangId) return;
   try {
-    const svar = await api(
-      'GET',
-      `/api/elev/omgangar/${sparad.omgangId}/deltagare/${sparad.deltagareId}?token=${encodeURIComponent(sparad.token)}`
-    );
+    const svar = await rpc('elev_lage', { p_omgang_id: sparad.omgangId, p_did: sparad.deltagareId, p_token: sparad.token });
     const pagar = svar.lage.omgangStatus === 'aktiv' && ['vantar', 'springer'].includes(svar.lage.status);
     if (!pagar) return rensaSession();
     s.omgang = svar.omgang;
@@ -150,7 +149,7 @@ function vidPin(e) {
     if (pin.length !== 6) return visaFel($('#pin-fel'), 'PIN-koden har sex siffror.');
     visaFel($('#pin-fel'), '');
     try {
-      const { omgang } = await api('GET', `/api/elev/pin/${pin}`);
+      const { omgang } = await rpc('elev_pin', { p_pin: pin });
       s.omgang = omgang;
       $('#namn-bana').textContent = `${omgang.namn}: ${omgang.bana.namn}`;
       visaVy('vy-namn');
@@ -169,7 +168,7 @@ function vidNamn(e) {
     if (!namn) return visaFel($('#namn-fel'), 'Skriv ditt namn så att läraren vet vem du är.');
     visaFel($('#namn-fel'), '');
     try {
-      const svar = await api('POST', `/api/elev/omgangar/${s.omgang.id}/deltagare`, { namn });
+      const svar = await rpc('elev_ga_med', { p_omgang_id: s.omgang.id, p_namn: namn });
       s.deltagareId = svar.deltagareId;
       s.token = svar.token;
       s.omgang = svar.omgang;
@@ -195,9 +194,9 @@ function fortsatt() {
 
 function slangSession() {
   const gammal = lasSession();
-  if (gammal && s.token) {
+  if (gammal?.token) {
     // Säg till servern att loppet är avbrutet, så att läraren inte väntar på eleven.
-    api('POST', `/api/elev/omgangar/${gammal.omgangId}/deltagare/${gammal.deltagareId}/avbryt`, { token: s.token }).catch(() => {});
+    rpc('elev_avbryt', { p_omgang_id: gammal.omgangId, p_did: gammal.deltagareId, p_token: gammal.token }).catch(() => {});
   }
   rensaSession();
   s.omgang = s.lage = s.token = s.deltagareId = null;
@@ -309,7 +308,7 @@ async function vidStart() {
   const knapp = $('#start-knapp');
   knapp.disabled = true;
   try {
-    const { lage } = await api('POST', `${deltagarUrl()}/start`, { token: s.token, tid: Date.now() });
+    const { lage } = await rpc('elev_starta', { ...mig(), p_tid: Date.now() });
     s.lage = lage;
     startaLopp(true);
   } catch (fel) {
@@ -398,11 +397,7 @@ async function skicka() {
   s.skickar = true;
   const parti = s.ko.slice(0, 300);
   try {
-    const { lage } = await api('POST', `${deltagarUrl()}/positioner`, {
-      token: s.token,
-      fixar: parti,
-      lamnatAppen: s.lamnatAppen,
-    });
+    const { lage } = await rpc('elev_positioner', { ...mig(), p_fixar: parti, p_lamnat_appen: s.lamnatAppen });
     s.ko.splice(0, parti.length);
     s.senastSkickat = Date.now();
     satOnline(true);
@@ -626,7 +621,7 @@ function hoppaOver() {
   if (!confirm(`Hoppa över kontroll ${nummer}? Du kan inte ta den senare.`)) return;
   medSparr($('#hoppa-knapp'), async () => {
     try {
-      const { lage } = await api('POST', `${deltagarUrl()}/hoppa-over`, { token: s.token });
+      const { lage } = await rpc('elev_hoppa_over', mig());
       $('#meny').close();
       hanteraLage(lage);
     } catch (fel) {
@@ -640,7 +635,7 @@ function avbrytLopp() {
   medSparr($('#avbryt-knapp'), async () => {
     try {
       await skicka(); // skicka sista positionerna först
-      const { lage } = await api('POST', `${deltagarUrl()}/avbryt`, { token: s.token });
+      const { lage } = await rpc('elev_avbryt', mig());
       $('#meny').close();
       hanteraLage(lage);
     } catch (fel) {

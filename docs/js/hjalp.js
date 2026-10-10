@@ -15,29 +15,6 @@ export class ApiFel extends Error {
   }
 }
 
-/** Anropar serverns API. Kastar ApiFel med serverns felmeddelande om något går fel. */
-export async function api(metod, url, body, huvuden = {}) {
-  let svar;
-  try {
-    svar = await fetch(url, {
-      method: metod,
-      headers: { ...(body ? { 'Content-Type': 'application/json' } : {}), ...huvuden },
-      body: body ? JSON.stringify(body) : undefined,
-      cache: 'no-store',
-    });
-  } catch {
-    throw new ApiFel(0, 'Ingen kontakt med servern. Kolla internetanslutningen.');
-  }
-  let data = {};
-  try {
-    data = await svar.json();
-  } catch {
-    /* tomt svar */
-  }
-  if (!svar.ok) throw new ApiFel(svar.status, data.fel || `Servern svarade med fel ${svar.status}.`);
-  return data;
-}
-
 /** Visar en vy (ett element med data-vy) och döljer de andra. */
 export function visaVy(id) {
   for (const el of $$('[data-vy]')) el.hidden = el.id !== id;

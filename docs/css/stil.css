@@ -206,6 +206,7 @@ input[type='text'],
 input:not([type]),
 input[type='search'],
 input[type='password'],
+input[type='email'],
 select {
   display: block;
   width: 100%;
@@ -628,6 +629,9 @@ dialog h2 {
 dialog .knapp + .knapp {
   margin-top: 8px;
 }
+dialog .knapprad .knapp + .knapp {
+  margin-top: 0;
+}
 dialog.ark {
   margin-bottom: 0;
   border-bottom: 0;
@@ -747,6 +751,25 @@ dialog.ark {
 .topp-roll {
   color: var(--gra);
   font-weight: 700;
+}
+.topp-konto {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+  min-width: 0;
+}
+.topp-epost {
+  color: var(--gra);
+  font-size: 0.95rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+@media (max-width: 560px) {
+  .topp-epost {
+    display: none;
+  }
 }
 
 .hem {
