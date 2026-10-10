@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Stämpla – lärare</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+  <link rel="stylesheet" href="css/stil.css">
+</head>
+<body class="larare">
+  <header class="topp">
+    <a class="varumarke" href="#/" aria-label="Stämpla, till lärarsidans start">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><rect x="1" y="1" width="30" height="30" fill="#fff"/><path d="M31 1V31H1Z" fill="#f47b20"/><rect x="1" y="1" width="30" height="30" fill="none" stroke="#000" stroke-width="2"/></svg>
+      Stämpla
+    </a>
+    <span class="topp-roll">Lärare</span>
+  </header>
+
+  <main>
+    <!-- Start: banor och omgångar -->
+    <section id="vy-hem" data-vy class="hem">
+      <div class="hem-rad">
+        <h1>Banor och omgångar</h1>
+        <a class="knapp primar" href="#/bana/ny">Ny bana</a>
+      </div>
+
+      <section id="pagaende-sektion" hidden>
+        <h2>Pågående omgångar</h2>
+        <ul class="lista" id="pagaende-lista"></ul>
+      </section>
+
+      <section>
+        <h2>Banor</h2>
+        <ul class="lista" id="ban-lista"></ul>
+        <div class="tomt" id="ban-tomt" hidden>
+          <p><strong>Här hamnar dina banor.</strong></p>
+          <p>Rita en bana på kartan: en start, några kontroller och ett mål. Sedan startar du en omgång och klassen går med med en PIN-kod.</p>
+          <a class="knapp primar" href="#/bana/ny">Rita din första bana</a>
+        </div>
+      </section>
+
+      <section id="avslutade-sektion" hidden>
+        <h2>Avslutade omgångar</h2>
+        <ul class="lista" id="avslutade-lista"></ul>
+      </section>
+    </section>
+
+    <!-- Rita eller ändra en bana -->
+    <section id="vy-redigera" data-vy class="delad" hidden>
+      <aside class="panel">
+        <a class="tillbaka" href="#/">Tillbaka till banorna</a>
+        <h1 id="red-rubrik">Ny bana</h1>
+
+        <div class="falt">
+          <label for="red-namn">Banans namn</label>
+          <input id="red-namn" maxlength="60" placeholder="t.ex. Skogen bakom skolan">
+        </div>
+
+        <fieldset class="verktyg">
+          <legend>Klicka på kartan för att sätta ut</legend>
+          <label>
+            <svg width="30" height="30" viewBox="-15 -15 30 30" aria-hidden="true"><polygon points="0,-11 9.5,5.5 -9.5,5.5" fill="none" stroke="currentColor" stroke-width="2.5"/></svg>
+            <span>Start</span>
+            <input type="radio" name="verktyg" value="start">
+          </label>
+          <label>
+            <svg width="30" height="30" viewBox="-15 -15 30 30" aria-hidden="true"><circle r="10" fill="none" stroke="currentColor" stroke-width="2.5"/></svg>
+            <span>Kontroll</span>
+            <input type="radio" name="verktyg" value="kontroll">
+          </label>
+          <label>
+            <svg width="30" height="30" viewBox="-15 -15 30 30" aria-hidden="true"><circle r="11.5" fill="none" stroke="currentColor" stroke-width="2.5"/><circle r="6.5" fill="none" stroke="currentColor" stroke-width="2.5"/></svg>
+            <span>Mål</span>
+            <input type="radio" name="verktyg" value="mal">
+          </label>
+        </fieldset>
+        <p class="hjalptext" id="red-tips"></p>
+
+        <div class="knapprad">
+          <button class="knapp liten-knapp" id="red-angra" type="button">Ångra senaste</button>
+          <button class="knapp liten-knapp" id="red-min-pos" type="button">Visa min position</button>
+          <button class="knapp liten-knapp" id="red-har" type="button" hidden>Sätt ut där jag står</button>
+        </div>
+
+        <form class="sok" id="sok-form" role="search">
+          <input type="search" id="sok" placeholder="Sök plats, t.ex. Hagaparken" aria-label="Sök plats">
+          <button class="knapp" type="submit">Sök</button>
+        </form>
+        <ul class="sok-traffar" id="sok-traffar"></ul>
+
+        <fieldset class="segment">
+          <legend>Karta för eleverna</legend>
+          <label><input type="radio" name="karttyp" value="gata" checked>Gatukarta</label>
+          <label><input type="radio" name="karttyp" value="terrang">Terrängkarta</label>
+        </fieldset>
+
+        <div class="falt">
+          <label for="red-radie">Stämpla när eleven är inom</label>
+          <select id="red-radie">
+            <option value="5">5 meter</option>
+            <option value="10" selected>10 meter</option>
+            <option value="15">15 meter</option>
+            <option value="20">20 meter</option>
+            <option value="25">25 meter</option>
+            <option value="30">30 meter</option>
+            <option value="40">40 meter</option>
+            <option value="50">50 meter</option>
+          </select>
+          <p class="hjalptext">I tät skog är GPS:en sämre. 15–20 meter gör det lättare att få stämpeln.</p>
+        </div>
+
+        <div class="summa" id="red-summa" aria-live="polite"></div>
+        <p class="felruta" id="red-fel" hidden></p>
+        <div class="knapprad">
+          <button class="knapp primar" id="red-spara" type="button">Spara banan</button>
+          <a class="knapp" href="#/">Avbryt</a>
+        </div>
+      </aside>
+      <div id="red-karta" class="karta"></div>
+    </section>
+
+    <!-- En omgång: PIN, live-karta och resultat -->
+    <section id="vy-omgang" data-vy class="delad" hidden>
+      <aside class="panel">
+        <a class="tillbaka" href="#/">Tillbaka till banorna</a>
+        <h1 id="omg-rubrik"></h1>
+        <p class="fakta" id="omg-bana"></p>
+
+        <div id="omg-anslut">
+          <div class="pin-block">
+            <div>
+              <span class="pin-etikett">PIN-kod</span>
+              <span class="pin siffror" id="omg-pin"></span>
+            </div>
+            <div class="qr" id="omg-qr"></div>
+          </div>
+          <p class="liten">Eleverna går till <a id="omg-lank" target="_blank" rel="noopener"></a> och skriver in PIN-koden, eller skannar QR-koden.</p>
+          <p class="varning" id="omg-localhost" hidden>QR-koden och länken pekar på den här datorn (localhost) och fungerar inte i mobiler. Öppna lärarsidan via din https-länk från tunneln, se README.md.</p>
+          <div class="knapprad">
+            <button class="knapp liten-knapp" id="omg-visa-stort" type="button">Visa PIN stort för klassen</button>
+          </div>
+        </div>
+
+        <div class="resultat-huvud">
+          <h2>Resultat</h2>
+          <button class="knapp liten-knapp" id="omg-csv" type="button">Ladda ner CSV</button>
+        </div>
+        <p class="hjalptext" id="omg-tomt">Ingen har gått med än. Eleverna dyker upp här så fort de skrivit in PIN-koden.</p>
+        <table class="resultat" id="omg-resultat">
+          <thead>
+            <tr><th>Plac.</th><th>Namn</th><th class="tal">Kontr.</th><th class="tal">Tid</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        <div class="detalj-ruta" id="omg-detalj" hidden></div>
+
+        <div class="knapprad" style="margin-top:28px">
+          <button class="knapp fara" id="omg-avsluta" type="button">Avsluta omgången</button>
+        </div>
+      </aside>
+      <div id="omg-karta" class="karta"></div>
+    </section>
+  </main>
+
+  <!-- Starta omgång -->
+  <dialog id="start-dialog">
+    <form method="dialog" id="start-form">
+      <h2>Starta omgång</h2>
+      <p class="fakta" id="start-bana"></p>
+      <div class="falt">
+        <label for="start-namn">Klass eller grupp</label>
+        <input id="start-namn" maxlength="40" placeholder="t.ex. 7B">
+      </div>
+      <label class="vaxel">
+        <input type="checkbox" id="start-test">
+        <span><strong>Testomgång</strong><br>Eleverna kan flytta sig genom att trycka på kartan i stället för att använda GPS. Bra för att prova vid datorn.</span>
+      </label>
+      <p class="felruta" id="start-fel" hidden></p>
+      <div class="knapprad">
+        <button class="knapp primar" id="start-ok" value="ok">Starta och visa PIN-kod</button>
+        <button class="knapp" value="avbryt" formnovalidate>Avbryt</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- PIN stort på projektorn -->
+  <dialog id="pin-dialog" class="helskarm">
+    <p class="ingress" style="margin:0">Gå till <strong class="stor-adress" id="stor-adress"></strong></p>
+    <p class="pin siffror" id="stor-pin"></p>
+    <div class="qr" id="stor-qr"></div>
+    <form method="dialog"><button class="knapp">Stäng</button></form>
+  </dialog>
+
+  <!-- Lärarlösenord (bara om servern startats med LARARLOSEN) -->
+  <dialog id="losen-dialog">
+    <form id="losen-form">
+      <h2>Lärarlösenord</h2>
+      <p>Lärarsidan är skyddad. Skriv lösenordet som servern startades med.</p>
+      <input type="password" id="losen" autocomplete="current-password" aria-label="Lösenord">
+      <p class="felruta" id="losen-fel" hidden></p>
+      <div class="knapprad"><button class="knapp primar" type="submit">Logga in</button></div>
+    </form>
+  </dialog>
+
+  <script src="vendor/leaflet/leaflet.js"></script>
+  <script src="vendor/qrcode/qrcode.js"></script>
+  <script type="module" src="js/larare.js"></script>
+</body>
+</html>

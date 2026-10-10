@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#ffffff">
+  <title>Stämpla – spela</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+  <link rel="stylesheet" href="css/stil.css">
+</head>
+<body class="elev">
+
+  <!-- 1. PIN-kod -->
+  <section id="vy-pin" data-vy class="vy smal">
+    <svg class="hero-karta" viewBox="0 0 360 170" role="img" aria-label="En orienteringsbana ritad på en karta">
+      <path d="M0 116 C40 102 70 120 96 146 L96 170 L0 170 Z" fill="#ffe3a3"/>
+      <path d="M232 0 C222 30 252 46 290 40 C322 34 344 16 360 22 L360 0 Z" fill="#cdeec3"/>
+      <path d="M20 40 C34 52 60 60 96 52" fill="none" stroke="#000" stroke-width="1.6" stroke-dasharray="6 4"/>
+      <g fill="none" stroke="#b8662b" stroke-width="1.4" opacity="0.75">
+        <path d="M196 96 C188 62 222 40 254 48 C290 56 300 92 278 110 C258 128 206 128 196 96 Z"/>
+        <path d="M216 92 C212 70 236 60 254 66 C276 72 280 94 266 102 C250 112 220 110 216 92 Z"/>
+        <path d="M236 88 C236 78 248 76 256 80 C264 85 262 94 254 96 C246 98 236 96 236 88 Z"/>
+        <path d="M110 170 C128 140 150 132 176 140 C206 150 240 156 270 150 C300 144 330 152 360 140"/>
+        <path d="M0 76 C30 70 54 84 70 104 C86 124 120 120 140 104"/>
+      </g>
+      <g fill="none" stroke="#b0158c" stroke-width="3">
+        <polygon points="58,124 70,145 46,145"/>
+        <line x1="66" y1="125" x2="125" y2="68"/>
+        <circle cx="135" cy="58" r="13"/>
+        <line x1="148" y1="60" x2="235" y2="77"/>
+        <circle cx="249" cy="80" r="13"/>
+        <line x1="257" y1="92" x2="295" y2="127"/>
+        <circle cx="306" cy="137" r="15"/>
+        <circle cx="306" cy="137" r="9"/>
+      </g>
+      <g fill="#b0158c" font-family="Barlow Condensed, sans-serif" font-weight="700" font-size="20">
+        <text x="150" y="46">1</text>
+        <text x="264" y="68">2</text>
+      </g>
+    </svg>
+
+    <a class="varumarke" href="./" aria-label="Stämpla, till startsidan">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><rect x="1" y="1" width="30" height="30" fill="#fff"/><path d="M31 1V31H1Z" fill="#f47b20"/><rect x="1" y="1" width="30" height="30" fill="none" stroke="#000" stroke-width="2"/></svg>
+      Stämpla
+    </a>
+    <p class="ingress">Orientering med mobilen. Kontrollerna stämplas automatiskt när du kommer fram.</p>
+
+    <div class="fortsatt" id="fortsatt" hidden>
+      <p><strong>Du har ett lopp som inte är klart.</strong><br><span id="fortsatt-text"></span></p>
+      <button class="knapp primar bred" id="fortsatt-knapp" type="button">Fortsätt loppet</button>
+      <button class="knapp lank bred" id="slang-knapp" type="button">Släng det och gå med med ny PIN</button>
+    </div>
+
+    <form id="pin-form" novalidate>
+      <label for="pin">PIN-kod från din lärare</label>
+      <input id="pin" class="pin-falt" inputmode="numeric" autocomplete="off" maxlength="6" placeholder="······" aria-describedby="pin-fel">
+      <p class="felruta" id="pin-fel" hidden></p>
+      <button class="knapp primar bred" type="submit">Gå med</button>
+    </form>
+    <p class="liten" style="margin-top:28px"><a href="larare.html">Är du lärare? Skapa banor här</a></p>
+  </section>
+
+  <!-- 2. Namn -->
+  <section id="vy-namn" data-vy class="vy smal" hidden>
+    <p class="fakta" id="namn-bana"></p>
+    <form id="namn-form" novalidate>
+      <h1><label for="namn">Vad heter du?</label></h1>
+      <p class="hjalptext">Namnet syns för läraren i resultatlistan. Springer ni i lag skriver ni lagets namn.</p>
+      <input id="namn" maxlength="40" autocomplete="given-name" autocapitalize="words" aria-describedby="namn-fel">
+      <p class="felruta" id="namn-fel" hidden></p>
+      <div class="knapprad">
+        <button class="knapp primar bred" type="submit">Fortsätt</button>
+        <button class="knapp lank bred" type="button" id="namn-tillbaka">Tillbaka</button>
+      </div>
+    </form>
+  </section>
+
+  <!-- 3. Redo att starta -->
+  <section id="vy-redo" data-vy class="vy smal" hidden>
+    <h1 id="redo-bana">Banan</h1>
+    <p class="fakta" id="redo-fakta"></p>
+
+    <div class="gps-ruta" id="gps-ruta" data-lage="soker" aria-live="polite">
+      <p class="gps-rubrik" id="gps-rubrik">Söker din position …</p>
+      <p id="gps-text">Det kan ta upp till en halv minut. Ställ dig gärna utomhus.</p>
+      <details id="gps-hjalp" hidden>
+        <summary>Så slår du på exakt plats</summary>
+        <p><strong>iPhone:</strong></p>
+        <ol>
+          <li>Inställningar → Integritet och säkerhet → Platstjänster: slå på.</li>
+          <li>Längre ner: tryck på din webbläsare (Safari-webbplatser eller Chrome) → Vid användning av appen.</li>
+          <li>Slå på <strong>Exakt plats</strong>.</li>
+          <li>Ladda om den här sidan och tryck Tillåt.</li>
+        </ol>
+        <p><strong>Android:</strong></p>
+        <ol>
+          <li>Inställningar → Plats: slå på Använd plats.</li>
+          <li>Appbehörigheter → din webbläsare → Tillåt endast när appen används.</li>
+          <li>Slå på <strong>Använd exakt plats</strong>.</li>
+          <li>Ladda om den här sidan och tryck Tillåt.</li>
+        </ol>
+      </details>
+    </div>
+
+    <label class="vaxel" id="test-vaxel" hidden>
+      <input type="checkbox" id="simulera">
+      <span><strong>Testläge</strong><br>Flytta dig genom att trycka på kartan i stället för att använda GPS.</span>
+    </label>
+
+    <ul class="regler">
+      <li>Tiden startar när du trycker Starta.</li>
+      <li id="regel-radie">Ta kontrollerna i nummerordning. Mobilen stämplar själv när du är framme.</li>
+      <li>Håll skärmen tänd och låt appen vara öppen. Läraren ser om du lämnar den.</li>
+    </ul>
+    <p class="felruta" id="start-fel" hidden></p>
+    <button class="knapp primar bred" id="start-knapp" type="button" disabled>Starta</button>
+  </section>
+
+  <!-- 4. Under loppet -->
+  <section id="vy-lopp" data-vy class="lopp" hidden>
+    <header class="hud">
+      <div class="hud-tid">
+        <span class="siffror" id="hud-tid">00:00</span>
+        <span class="hud-etikett">tid</span>
+      </div>
+      <div class="hud-nasta">
+        <span class="hud-etikett" id="hud-till">Till kontroll 1</span>
+        <span class="siffror" id="hud-avstand">–</span>
+      </div>
+    </header>
+    <div class="kartyta">
+      <div id="lopp-karta" class="lopp-karta"></div>
+      <div class="banderoll" id="banderoll" role="status" hidden></div>
+      <button class="kartknapp" id="folj-knapp" type="button" aria-pressed="false" aria-label="Följ min position">
+        <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><circle cx="13" cy="13" r="6" fill="currentColor"/><circle cx="13" cy="13" r="10.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M13 0v5M13 21v5M0 13h5M21 13h5" stroke="currentColor" stroke-width="2"/></svg>
+      </button>
+    </div>
+    <footer class="stampelkort">
+      <ol class="kort-rutor" id="kort-rutor" aria-label="Stämpelkort"></ol>
+      <button class="knapp meny-knapp" id="meny-knapp" type="button" aria-label="Fler val">
+        <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="2.4"/><circle cx="12" cy="12" r="2.4"/><circle cx="19" cy="12" r="2.4"/></svg>
+      </button>
+    </footer>
+
+    <div class="stampel-overlay" id="stampel-overlay" hidden>
+      <div class="stampel-kort" role="status">
+        <div id="stampel-ruta"></div>
+        <p class="stampel-rubrik" id="stampel-rubrik"></p>
+        <p class="stampel-tid" id="stampel-tid"></p>
+      </div>
+    </div>
+
+    <dialog class="ark" id="meny">
+      <h2>Loppet</h2>
+      <button class="knapp bred" id="hoppa-knapp" type="button">Hoppa över kontrollen</button>
+      <p class="hjalptext">Använd bara om du inte hittar den. Läraren ser vilka kontroller du hoppat över.</p>
+      <button class="knapp fara bred" id="avbryt-knapp" type="button">Avsluta loppet</button>
+      <button class="knapp lank bred" id="meny-stang" type="button">Stäng</button>
+    </dialog>
+  </section>
+
+  <!-- 5. Klar -->
+  <section id="vy-klar" data-vy class="vy smal" hidden>
+    <h1 id="klar-rubrik">I mål!</h1>
+    <p class="stor-tid siffror" id="klar-tid"></p>
+    <p id="klar-fakta"></p>
+    <table class="strack-tabell" id="klar-strackor"></table>
+    <button class="knapp primar bred" id="klar-knapp" type="button">Tillbaka till start</button>
+  </section>
+
+  <script src="vendor/leaflet/leaflet.js"></script>
+  <script type="module" src="js/elev.js"></script>
+</body>
+</html>

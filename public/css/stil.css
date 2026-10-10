@@ -1,0 +1,1192 @@
+/* Stämpla – gemensam stil för elev- och lärarsidan.
+   Färgerna kommer från orienteringskartan: vitt papper, lila banpåtryck,
+   orange kontrollflagga, gult för öppen mark och grönt för vegetation. */
+
+@font-face {
+  font-family: 'Atkinson Hyperlegible Next';
+  src: url('../fonts/atkinson-hyperlegible-next-latin-400-normal.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Atkinson Hyperlegible Next';
+  src: url('../fonts/atkinson-hyperlegible-next-latin-700-normal.woff2') format('woff2');
+  font-weight: 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Barlow Condensed';
+  src: url('../fonts/barlow-condensed-latin-600-normal.woff2') format('woff2');
+  font-weight: 600;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Barlow Condensed';
+  src: url('../fonts/barlow-condensed-latin-700-normal.woff2') format('woff2');
+  font-weight: 700;
+  font-display: swap;
+}
+
+:root {
+  --papper: #ffffff;
+  --svart: #000000;
+  --gra: #595959;
+  --linje: #d4d4d4;
+  --yta: #f3f3f3;
+  --lila: #b0158c;
+  --lila-ljus: #f8e6f2;
+  --orange: #f47b20;
+  --orange-mork: #c95a0a;
+  --gul: #ffe3a3;
+  --gron: #1d6b31;
+  --gron-ljus: #d8f0cf;
+  --bla: #1a5fd0;
+  --rod: #b3261e;
+  --rod-ljus: #fbe3e1;
+  --brun: #b8662b;
+
+  --text: 'Atkinson Hyperlegible Next', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --siffror: 'Barlow Condensed', 'Arial Narrow', system-ui, sans-serif;
+  --rund: 10px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--text);
+  font-size: 17px;
+  line-height: 1.45;
+  color: var(--svart);
+  background: var(--papper);
+}
+
+[hidden] {
+  display: none !important;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0 0 0.4em;
+  line-height: 1.15;
+}
+h1 {
+  font-size: 1.75rem;
+}
+h2 {
+  font-size: 1.25rem;
+}
+p {
+  margin: 0 0 0.8em;
+}
+a {
+  color: var(--svart);
+  text-underline-offset: 3px;
+}
+a:hover {
+  color: var(--lila);
+}
+
+.siffror {
+  font-family: var(--siffror);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+}
+
+.liten {
+  font-size: 0.9rem;
+  color: var(--gra);
+}
+.hjalptext {
+  font-size: 0.95rem;
+  color: var(--gra);
+  margin: 0.2em 0 0.6em;
+}
+.fakta {
+  color: var(--gra);
+}
+
+:focus-visible {
+  outline: 3px solid var(--bla);
+  outline-offset: 2px;
+}
+
+/* ---------- Knappar och fält ---------- */
+
+.knapp {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45em;
+  min-height: 48px;
+  padding: 0 18px;
+  border: 2px solid var(--svart);
+  border-radius: var(--rund);
+  background: var(--papper);
+  color: var(--svart);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.knapp:hover {
+  background: var(--yta);
+  color: var(--svart);
+}
+.knapp:active {
+  transform: translateY(1px);
+}
+.knapp:disabled {
+  border-color: var(--linje);
+  color: #8a8a8a;
+  background: var(--yta);
+  cursor: not-allowed;
+  transform: none;
+}
+.knapp.primar {
+  background: var(--orange);
+  border-color: var(--orange);
+}
+.knapp.primar:hover {
+  background: #ff8c33;
+}
+.knapp.primar:disabled {
+  background: var(--yta);
+  border-color: var(--linje);
+}
+.knapp.fara {
+  color: var(--rod);
+  border-color: var(--rod);
+}
+.knapp.fara:hover {
+  background: var(--rod-ljus);
+}
+.knapp.lank {
+  border-color: transparent;
+  background: transparent;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  font-weight: 400;
+}
+.knapp.liten-knapp {
+  min-height: 38px;
+  padding: 0 12px;
+  font-size: 0.95rem;
+}
+.knapp.bred {
+  width: 100%;
+}
+.knapp svg {
+  flex: none;
+}
+
+.knapprad {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+label {
+  font-weight: 700;
+}
+
+input[type='text'],
+input:not([type]),
+input[type='search'],
+input[type='password'],
+select {
+  display: block;
+  width: 100%;
+  min-height: 52px;
+  margin: 6px 0 0;
+  padding: 0 14px;
+  border: 2px solid var(--svart);
+  border-radius: var(--rund);
+  background: var(--papper);
+  color: var(--svart);
+  font: inherit;
+  font-size: 1.1rem;
+  font-weight: 400;
+}
+select {
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--svart) 50%),
+    linear-gradient(135deg, var(--svart) 50%, transparent 50%);
+  background-position: calc(100% - 22px) 50%, calc(100% - 16px) 50%;
+  background-size: 6px 6px;
+  background-repeat: no-repeat;
+}
+
+.felruta {
+  margin: 10px 0;
+  padding: 10px 12px;
+  border-left: 4px solid var(--rod);
+  background: var(--rod-ljus);
+  color: var(--svart);
+}
+
+.varning {
+  padding: 10px 12px;
+  border-left: 4px solid var(--orange-mork);
+  background: var(--gul);
+  font-size: 0.95rem;
+}
+
+/* Kontrollflaggan i logotypen */
+.varumarke {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--siffror);
+  font-weight: 700;
+  font-size: 2.6rem;
+  line-height: 1;
+  color: var(--svart);
+  text-decoration: none;
+}
+.varumarke svg {
+  width: 0.8em;
+  height: 0.8em;
+}
+
+/* ---------- Elev: startskärmar ---------- */
+
+.vy.smal {
+  max-width: 460px;
+  margin: 0 auto;
+  padding: 20px 16px 40px;
+}
+
+.hero-karta {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 0 0 12px;
+  border-radius: var(--rund);
+  background: var(--papper);
+}
+
+.ingress {
+  font-size: 1.1rem;
+  margin: 8px 0 24px;
+}
+
+.pin-falt {
+  font-family: var(--siffror) !important;
+  font-weight: 700 !important;
+  font-size: 2.6rem !important;
+  letter-spacing: 0.18em;
+  text-align: center;
+  min-height: 72px !important;
+  margin-bottom: 12px !important;
+}
+
+.fortsatt {
+  margin: 0 0 24px;
+  padding: 14px;
+  border: 2px solid var(--lila);
+  border-radius: var(--rund);
+  background: var(--lila-ljus);
+}
+.fortsatt p {
+  margin-bottom: 10px;
+}
+
+.bana-rubrik {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.gps-ruta {
+  margin: 18px 0;
+  padding: 14px 14px 6px;
+  border-radius: var(--rund);
+  border: 2px solid var(--linje);
+}
+.gps-ruta[data-lage='redo'] {
+  border-color: var(--gron);
+  background: var(--gron-ljus);
+}
+.gps-ruta[data-lage='vantar'] {
+  border-color: var(--orange-mork);
+  background: var(--gul);
+}
+.gps-ruta[data-lage='fel'] {
+  border-color: var(--rod);
+  background: var(--rod-ljus);
+}
+.gps-ruta[data-lage='test'] {
+  border-color: var(--lila);
+  background: var(--lila-ljus);
+}
+.gps-rubrik {
+  font-weight: 700;
+  font-size: 1.1rem;
+  margin-bottom: 4px;
+}
+.gps-ruta details {
+  margin: 4px 0 8px;
+}
+.gps-ruta summary {
+  cursor: pointer;
+  font-weight: 700;
+  min-height: 32px;
+}
+.gps-ruta ol {
+  padding-left: 1.3em;
+  margin: 6px 0 10px;
+}
+
+.vaxel {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin: 0 0 18px;
+  padding: 12px 14px;
+  border: 2px dashed var(--lila);
+  border-radius: var(--rund);
+  font-weight: 400;
+  cursor: pointer;
+}
+.vaxel input {
+  width: 24px;
+  height: 24px;
+  margin-top: 2px;
+  accent-color: var(--lila);
+  flex: none;
+}
+
+.regler {
+  margin: 0 0 22px;
+  padding-left: 1.2em;
+}
+.regler li {
+  margin-bottom: 6px;
+}
+
+/* ---------- Elev: under loppet ---------- */
+
+.lopp {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--papper);
+}
+
+.hud {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 12px;
+  padding: calc(8px + env(safe-area-inset-top)) 16px 8px;
+  border-bottom: 2px solid var(--svart);
+  background: var(--papper);
+  z-index: 2;
+}
+.hud > div {
+  display: flex;
+  flex-direction: column;
+}
+.hud-nasta {
+  text-align: right;
+  align-items: flex-end;
+}
+.hud .siffror {
+  font-size: 2.6rem;
+  line-height: 1;
+}
+.hud-etikett {
+  font-size: 0.9rem;
+  color: var(--gra);
+  order: 2;
+}
+.hud-nasta .hud-etikett {
+  order: 0;
+  color: var(--lila);
+  font-weight: 700;
+}
+
+.kartyta {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+.banderoll {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1001;
+  padding: 8px 16px;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+.banderoll[data-typ='offline'] {
+  background: var(--rod);
+  color: #fff;
+}
+.banderoll[data-typ='svag'] {
+  background: var(--gul);
+}
+.banderoll[data-typ='test'] {
+  background: var(--lila-ljus);
+  color: var(--lila);
+}
+
+.lopp-karta {
+  position: absolute;
+  inset: 0;
+}
+
+/* Under loppet: zoomknappar under banderollen och följ-knappen ovanför kartans upphovstext */
+.kartyta .leaflet-top {
+  top: 46px;
+}
+.kartyta .leaflet-control-attribution {
+  font-size: 10px;
+}
+.kartknapp {
+  position: absolute;
+  right: 12px;
+  bottom: 44px;
+  z-index: 1001;
+  width: 54px;
+  height: 54px;
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--svart);
+  border-radius: 50%;
+  background: var(--papper);
+  cursor: pointer;
+}
+.kartknapp[aria-pressed='true'] {
+  background: var(--bla);
+  border-color: var(--bla);
+  color: #fff;
+}
+
+/* Stämpelkortet – en rad rutor som stansas när kontrollerna tas */
+.stampelkort {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+  border-top: 2px solid var(--svart);
+  background: var(--papper);
+  z-index: 2;
+}
+.kort-rutor {
+  flex: 1;
+  display: flex;
+  gap: 6px;
+  margin: 0;
+  padding: 2px;
+  list-style: none;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.kort-rutor::-webkit-scrollbar {
+  display: none;
+}
+.ruta {
+  position: relative;
+  flex: none;
+  width: 48px;
+  height: 58px;
+  border: 1.5px solid var(--svart);
+  border-radius: 4px;
+  background: var(--papper);
+}
+.ruta-nr {
+  position: absolute;
+  top: 2px;
+  left: 5px;
+  font-family: var(--siffror);
+  font-weight: 700;
+  font-size: 0.95rem;
+  line-height: 1;
+}
+.ruta .stans {
+  position: absolute;
+  left: 6px;
+  bottom: 4px;
+  width: 36px;
+  height: 36px;
+}
+.ruta.nasta {
+  border: 3px solid var(--lila);
+}
+.ruta.nasta .ruta-nr {
+  color: var(--lila);
+}
+.ruta.hoppad {
+  background: repeating-linear-gradient(-45deg, var(--yta) 0 6px, var(--papper) 6px 12px);
+  color: var(--gra);
+}
+.ruta.mal .ruta-nr {
+  font-size: 0.85rem;
+}
+.stans circle {
+  fill: var(--lila);
+}
+.stans.animera circle {
+  animation: stansa 260ms cubic-bezier(0.2, 1.6, 0.4, 1) both;
+  animation-delay: calc(var(--i) * 70ms + 120ms);
+}
+@keyframes stansa {
+  from {
+    transform: scale(0);
+    opacity: 0;
+  }
+}
+.stans circle {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.meny-knapp {
+  width: 52px;
+  min-height: 52px;
+  padding: 0;
+  flex: none;
+}
+
+/* Stämpelögonblicket */
+.stampel-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  background: rgb(255 255 255 / 0.55);
+  pointer-events: none;
+}
+.stampel-kort {
+  min-width: 240px;
+  padding: 22px 26px 16px;
+  border: 3px solid var(--lila);
+  border-radius: 14px;
+  background: var(--papper);
+  text-align: center;
+  box-shadow: 0 12px 40px rgb(0 0 0 / 0.25);
+  animation: dyk-upp 220ms ease-out both;
+}
+@keyframes dyk-upp {
+  from {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+}
+.stampel-kort .ruta {
+  margin: 0 auto 12px;
+  transform: scale(1.6);
+  transform-origin: top center;
+  margin-bottom: 52px;
+}
+.stampel-rubrik {
+  font-family: var(--siffror);
+  font-size: 2.2rem;
+  font-weight: 700;
+  line-height: 1;
+  margin: 0 0 6px;
+}
+.stampel-tid {
+  color: var(--gra);
+  margin: 0;
+}
+
+/* Bladet med fler val under loppet */
+dialog {
+  border: 2px solid var(--svart);
+  border-radius: 14px;
+  padding: 20px;
+  max-width: min(460px, calc(100vw - 24px));
+  width: 100%;
+  color: var(--svart);
+}
+dialog::backdrop {
+  background: rgb(0 0 0 / 0.45);
+}
+dialog h2 {
+  margin-bottom: 12px;
+}
+dialog .knapp + .knapp {
+  margin-top: 8px;
+}
+dialog.ark {
+  margin-bottom: 0;
+  border-bottom: 0;
+  border-radius: 14px 14px 0 0;
+  padding-bottom: calc(20px + env(safe-area-inset-bottom));
+}
+
+/* Resultat */
+.stor-tid {
+  font-size: 4.5rem;
+  line-height: 1;
+  margin: 6px 0 4px;
+}
+.strack-tabell {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 18px 0 26px;
+  font-variant-numeric: tabular-nums;
+}
+.strack-tabell th,
+.strack-tabell td {
+  text-align: left;
+  padding: 7px 6px;
+  border-bottom: 1px solid var(--linje);
+}
+.strack-tabell th {
+  font-size: 0.9rem;
+  color: var(--gra);
+}
+.strack-tabell td.tal,
+.strack-tabell th.tal {
+  text-align: right;
+}
+.strack-tabell td.tal {
+  font-family: var(--siffror);
+  font-weight: 600;
+  font-size: 1.15em;
+}
+
+/* Banans symboler på orienteringskartan (Leaflet-ikoner) */
+.bp {
+  background: none;
+  border: none;
+}
+.bp svg {
+  display: block;
+  overflow: visible;
+}
+.bp .bp-form {
+  fill: none;
+  stroke: var(--lila);
+  stroke-width: 3;
+}
+.bp .bp-halo {
+  fill: none;
+  stroke: rgb(255 255 255 / 0.8);
+  stroke-width: 7;
+}
+.bp-nr {
+  position: absolute;
+  left: 30px;
+  top: -14px;
+  font-family: var(--siffror);
+  font-weight: 700;
+  font-size: 22px;
+  line-height: 1;
+  color: var(--lila);
+  text-shadow: 0 0 3px #fff, 0 0 3px #fff, 0 0 4px #fff;
+  pointer-events: none;
+  white-space: nowrap;
+}
+.bp.tagen,
+.bp.hoppad {
+  opacity: 0.4;
+}
+.bp.nasta .bp-form {
+  stroke-width: 4.5;
+}
+.bp.nasta::before {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 3px solid var(--lila);
+  animation: puls 1.6s ease-out infinite;
+}
+.bp-start.nasta::before {
+  display: none;
+}
+@keyframes puls {
+  from {
+    transform: scale(0.7);
+    opacity: 0.8;
+  }
+  to {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+.leaflet-marker-draggable.bp {
+  cursor: grab;
+}
+
+/* ---------- Lärarsidan ---------- */
+
+.topp {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  height: 60px;
+  padding: 0 20px;
+  border-bottom: 2px solid var(--svart);
+}
+.topp .varumarke {
+  font-size: 1.9rem;
+}
+.topp-roll {
+  color: var(--gra);
+  font-weight: 700;
+}
+
+.hem {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 28px 20px 60px;
+}
+.hem-rad {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+.hem-rad h1 {
+  margin: 0;
+}
+.hem section {
+  margin-top: 30px;
+}
+.hem section > h2 {
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--svart);
+}
+
+.lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.lista > li {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--linje);
+}
+.lista .namn {
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+.lista .info {
+  flex: 1 1 260px;
+  min-width: 0;
+}
+.lista .detalj {
+  color: var(--gra);
+  font-size: 0.95rem;
+}
+.lista .atgarder {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.lista .pin-liten {
+  font-size: 1.6rem;
+  letter-spacing: 0.08em;
+}
+
+/* Banans tecken i miniatyr: ▲ ○ ○ ○ ◎ */
+.banremsa {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: none;
+  color: var(--lila);
+}
+.banremsa svg {
+  display: block;
+}
+.banremsa .fler {
+  font-family: var(--siffror);
+  font-weight: 700;
+  margin: 0 3px;
+}
+
+.tomt {
+  padding: 26px;
+  border: 2px dashed var(--linje);
+  border-radius: var(--rund);
+  text-align: center;
+}
+.tomt p {
+  max-width: 46ch;
+  margin: 0 auto 14px;
+}
+
+.chip {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.chip.springer {
+  background: var(--gul);
+}
+.chip.klar {
+  background: var(--gron-ljus);
+  color: var(--gron);
+}
+.chip.avbrot,
+.chip.vantar {
+  background: var(--yta);
+  color: var(--gra);
+}
+.chip.test {
+  background: var(--lila-ljus);
+  color: var(--lila);
+}
+.chip.varn {
+  background: var(--rod-ljus);
+  color: var(--rod);
+}
+
+/* Delad vy: panel till vänster, karta till höger */
+.delad {
+  display: grid;
+  grid-template-columns: minmax(340px, 420px) 1fr;
+  height: calc(100dvh - 60px);
+}
+.panel {
+  overflow-y: auto;
+  padding: 18px 20px 30px;
+  border-right: 2px solid var(--svart);
+}
+.karta {
+  min-height: 300px;
+}
+.tillbaka {
+  display: inline-block;
+  margin-bottom: 12px;
+  font-weight: 700;
+}
+
+.falt {
+  margin: 0 0 16px;
+}
+
+.verktyg {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin: 0 0 8px;
+  padding: 0;
+  border: 0;
+}
+.verktyg legend {
+  font-weight: 700;
+  margin-bottom: 6px;
+  padding: 0;
+}
+.verktyg label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 4px 8px;
+  border: 2px solid var(--linje);
+  border-radius: var(--rund);
+  cursor: pointer;
+  color: var(--lila);
+  font-size: 0.95rem;
+}
+.verktyg label span {
+  color: var(--svart);
+}
+.verktyg input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.verktyg label:has(input:checked) {
+  border-color: var(--lila);
+  background: var(--lila-ljus);
+}
+.verktyg label:has(input:focus-visible) {
+  outline: 3px solid var(--bla);
+  outline-offset: 2px;
+}
+
+.segment {
+  display: flex;
+  margin: 6px 0 16px;
+  padding: 0;
+  border: 0;
+}
+.segment legend {
+  font-weight: 700;
+  padding: 0;
+  margin-bottom: 6px;
+}
+.segment label {
+  flex: 1;
+  padding: 10px 8px;
+  border: 2px solid var(--svart);
+  text-align: center;
+  font-weight: 400;
+  cursor: pointer;
+}
+.segment label + label {
+  border-left: 0;
+}
+.segment label:first-of-type {
+  border-radius: var(--rund) 0 0 var(--rund);
+}
+.segment label:last-of-type {
+  border-radius: 0 var(--rund) var(--rund) 0;
+}
+.segment input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.segment label:has(input:checked) {
+  background: var(--svart);
+  color: #fff;
+  font-weight: 700;
+}
+.segment label:has(input:focus-visible) {
+  outline: 3px solid var(--bla);
+  outline-offset: 2px;
+}
+
+.sok {
+  display: flex;
+  gap: 8px;
+  margin: 16px 0 6px;
+}
+.sok input {
+  margin: 0;
+}
+.sok .knapp {
+  min-height: 52px;
+}
+.sok-traffar {
+  list-style: none;
+  margin: 0 0 10px;
+  padding: 0;
+}
+.sok-traffar button {
+  width: 100%;
+  padding: 9px 10px;
+  border: 0;
+  border-bottom: 1px solid var(--linje);
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.sok-traffar button:hover {
+  background: var(--yta);
+}
+
+.summa {
+  margin: 16px 0;
+  padding: 12px 14px;
+  border-radius: var(--rund);
+  background: var(--yta);
+}
+.summa p {
+  margin: 0;
+}
+
+.popup-knapp {
+  margin-top: 6px;
+}
+
+/* Live-vyn */
+.pin-block {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin: 14px 0 6px;
+  padding: 12px 14px;
+  border: 2px solid var(--svart);
+  border-radius: var(--rund);
+}
+.pin-etikett {
+  display: block;
+  color: var(--gra);
+  font-weight: 700;
+}
+.pin {
+  display: block;
+  font-size: 3.4rem;
+  line-height: 1;
+  letter-spacing: 0.08em;
+}
+.qr {
+  width: 108px;
+  flex: none;
+}
+.qr svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.resultat-huvud {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-top: 22px;
+  padding-bottom: 6px;
+  border-bottom: 2px solid var(--svart);
+}
+.resultat-huvud h2 {
+  margin: 0;
+}
+
+.resultat {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+.resultat th {
+  font-size: 0.85rem;
+  color: var(--gra);
+  text-align: left;
+  padding: 8px 6px;
+}
+.resultat td {
+  padding: 9px 6px;
+  border-bottom: 1px solid var(--linje);
+  vertical-align: top;
+}
+.resultat .tal {
+  text-align: right;
+  white-space: nowrap;
+}
+.resultat tbody tr {
+  cursor: pointer;
+}
+.resultat tbody tr:hover {
+  background: var(--yta);
+}
+.resultat tbody tr.vald {
+  background: var(--lila-ljus);
+}
+.resultat .plac {
+  font-family: var(--siffror);
+  font-weight: 700;
+  font-size: 1.15rem;
+  width: 2em;
+}
+.resultat .elevnamn {
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+.resultat .under {
+  display: block;
+  margin-top: 3px;
+  font-weight: 400;
+}
+.resultat .under .chip {
+  margin: 0 4px 3px 0;
+}
+
+.detalj-ruta {
+  margin: 14px 0;
+  padding: 14px;
+  border: 2px solid var(--lila);
+  border-radius: var(--rund);
+}
+.detalj-ruta h3 {
+  margin: 0 0 6px;
+}
+.detalj-ruta .strack-tabell {
+  margin: 8px 0 4px;
+  font-size: 0.95rem;
+}
+
+.lopar-etikett {
+  padding: 1px 6px;
+  border: 1.5px solid var(--svart);
+  border-radius: 6px;
+  background: #fff;
+  box-shadow: none;
+  font-family: var(--text);
+  font-weight: 700;
+  font-size: 13px;
+}
+.lopar-etikett::before {
+  display: none;
+}
+
+/* Stor PIN för projektorn */
+dialog.helskarm {
+  max-width: 920px;
+  text-align: center;
+  padding: 36px 30px;
+}
+.helskarm .pin {
+  font-size: clamp(5rem, 16vw, 10rem);
+  margin: 8px 0 12px;
+}
+.helskarm .stor-adress {
+  font-size: 1.5rem;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+.helskarm .qr {
+  width: min(320px, 60vw);
+  margin: 10px auto 20px;
+}
+
+@media (max-width: 760px) {
+  .delad {
+    grid-template-columns: 1fr;
+    grid-template-rows: 52dvh auto;
+    height: auto;
+  }
+  .delad .karta {
+    order: -1;
+    height: 52dvh;
+  }
+  .panel {
+    border-right: 0;
+    border-top: 2px solid var(--svart);
+    overflow: visible;
+  }
+  .topp {
+    padding: 0 16px;
+  }
+  .hem {
+    padding: 20px 16px 50px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
